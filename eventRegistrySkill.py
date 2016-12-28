@@ -159,10 +159,10 @@ class EventRegistry:
                 FilterExpression=Key('event_date').eq(event_date) and Key('event_type').eq(event_type)
         )
 
-        speech_output = event_type + " for " + event_date + " are"
+        speech_output = "The following people have " + event_type + " on " + event_date + ","
 
         for i in response['Items']:
-            speech_output = speech_output + " and" + response['Items'][i]['person_name']
+            speech_output = speech_output + i['person_name'] + " "
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
@@ -186,10 +186,10 @@ class EventRegistry:
                 FilterExpression=Key('event_date').eq(event_date)
         )
 
-        speech_output = "Events for " + event_date + " are"
+        speech_output = "Events for " + event_date + " are "
 
         for i in response['Items']:
-            speech_output = speech_output + response['Items'][i]['event_type'] + " for " + response['Items'][i]['person_name'] + "."
+            speech_output = speech_output + i['event_type'] + " for " + i['person_name'] + "."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
