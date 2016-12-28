@@ -50,7 +50,7 @@ def on_intent(intent_request, session):
     """ Called when the user specifies an intent for this skill """
 
     print("on_intent requestId=" + intent_request['requestId'] + ", sessionId=" + session['sessionId'])
-    print("intent_request_json: " + json.dumps(intent_request, indent=4, sort_keys=True))
+    #print("intent_request_json: " + json.dumps(intent_request, indent=4, sort_keys=True))
 
     intent_name = intent_request['intent']['name']
     print("intent name was: " + intent_name)
@@ -71,7 +71,7 @@ class EventRegistry:
 
     @staticmethod
     def save_event(intent_request):
-        """ Sets the phrase in dynamo DB and prepares the speech to reply to the user."""
+        """ Saves the event in dynamo db and prepares the speech to reply to the user."""
 
         card_title = intent_request['intent']['name']
 
@@ -106,7 +106,7 @@ class EventRegistry:
 
         reprompt_text = ""
 
-        speech_output = "Saved " + event_type + " for " + person_name + " as " + event_date
+        speech_output = "Saved " + person_name + " " + event_type + " on " + event_date + "."
         return build_response({}, build_speechlet_response(title=card_title,
                                                            output=speech_output,
                                                            reprompt_text=reprompt_text,
@@ -114,8 +114,6 @@ class EventRegistry:
 
     @staticmethod
     def retrieve_events_by_name_and_type(intent_request):
-
-        card_title = intent_request['intent']['name']
 
         person_name = intent_request['intent']['slots']['PersonName']['value']
         event_type = intent_request['intent']['slots']['EventType']['value']
@@ -132,8 +130,6 @@ class EventRegistry:
                 FilterExpression=Key('person_name').eq(person_name) and Key('event_type').eq(event_type)
         )
 
-        print(response['Items'][0]['event_date'])
-
         speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
 
         return build_response(session_attributes={},
@@ -141,8 +137,6 @@ class EventRegistry:
 
     @staticmethod
     def retrieve_events_by_date_and_type(intent_request):
-
-        card_title = intent_request['intent']['name']
 
         event_date = intent_request['intent']['slots']['EventDate']['value']
         event_type = intent_request['intent']['slots']['EventType']['value']
@@ -170,8 +164,6 @@ class EventRegistry:
     @staticmethod
     def retrieve_events_by_date(intent_request):
 
-        card_title = intent_request['intent']['name']
-
         event_date = intent_request['intent']['slots']['EventDate']['value']
 
         print("Retrieving events for " + event_date)
@@ -194,10 +186,6 @@ class EventRegistry:
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
 
-
-# --------------- Functions that control the skill's behavior ------------------
-
-
 def get_welcome_response():
     """ If we wanted to initialize the session to have some attributes we could
     add those here
@@ -206,7 +194,7 @@ def get_welcome_response():
     session_attributes = {}
     card_title = "Welcome"
     speech_output = "Welcome to the event registry. " \
-                    "To save an event, for example a birthday, please say 'Save John's birthday as Jan 1 1984'"
+                    "To add an event, for example a birthday, please say 'Add John birthday as Jan 1 1984'"
     # If the user either does not reply to the welcome message or says something
     # that is not understood, they will be prompted again with this text.
     reprompt_text = "Totally didn't understand that."
