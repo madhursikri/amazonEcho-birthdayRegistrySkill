@@ -117,7 +117,7 @@ class EventRegistry:
         person_name = intent_request['intent']['slots']['PersonName']['value']
         event_type = intent_request['intent']['slots']['EventType']['value']
 
-        print("Retrieveing " + event_type + " for " + person_name)
+        print("Retrieving " + event_type + " for " + person_name)
 
         # get connection to dynamo
         dynamo = boto3.resource('dynamodb')
@@ -125,10 +125,13 @@ class EventRegistry:
         # get table
         table = dynamo.Table('event_registry')
 
-        # TODO
-        event_date = "2000-01-01"
+        response = table.scan(
+                FilterExpression=Key('person_name').eq(person_name) and Key('event_type').eq(event_type)
+        )
 
-        speech_output = event_type + " for " + person_name + " is on " + event_date
+        print(response['Items'][0]['event_date'])
+
+        speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
