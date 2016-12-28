@@ -77,7 +77,7 @@ class EventRegistry:
 
         person_name = intent_request['intent']['slots']['PersonName']['value']
         event_type = intent_request['intent']['slots']['EventType']['value']
-        event_date = intent_request['intent']['slots']['EventDate']['value']
+        event_date = intent_request['intent']['slots']['EventDate']['value'][5:]
 
         # persist in database
         #{
@@ -130,7 +130,12 @@ class EventRegistry:
                 FilterExpression=Key('person_name').eq(person_name) and Key('event_type').eq(event_type)
         )
 
-        speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
+        if len(response['Items']) > 0:
+            speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
+        else:
+            speech_output = event_type + " for " + person_name + " was not found. Please add the event to the registry first."
+
+
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
@@ -138,7 +143,7 @@ class EventRegistry:
     @staticmethod
     def retrieve_events_by_date_and_type(intent_request):
 
-        event_date = intent_request['intent']['slots']['EventDate']['value']
+        event_date = intent_request['intent']['slots']['EventDate']['value'][5:]
         event_type = intent_request['intent']['slots']['EventType']['value']
 
         print("Retrieving " + event_type + " for " + event_date)
@@ -153,10 +158,13 @@ class EventRegistry:
                 FilterExpression=Key('event_date').eq(event_date) and Key('event_type').eq(event_type)
         )
 
-        speech_output = "The following people have " + event_type + " on " + event_date + ","
+        if len(response['Items']) > 0:
+            speech_output = "The following people have " + event_type + " on " + event_date + ","
 
-        for i in response['Items']:
-            speech_output = speech_output + i['person_name'] + " "
+            for i in response['Items']:
+                speech_output = speech_output + i['person_name'] + " "
+        else:
+            speech_output = "No " + event_type + " falling on " + event_date + " were found."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
@@ -164,7 +172,7 @@ class EventRegistry:
     @staticmethod
     def retrieve_events_by_date(intent_request):
 
-        event_date = intent_request['intent']['slots']['EventDate']['value']
+        event_date = intent_request['intent']['slots']['EventDate']['value'][5:]
 
         print("Retrieving events for " + event_date)
 
@@ -178,10 +186,13 @@ class EventRegistry:
                 FilterExpression=Key('event_date').eq(event_date)
         )
 
-        speech_output = "Events for " + event_date + " are "
+        if len(response['Items']) > 0:
+            speech_output = "Events for " + event_date + " are "
 
-        for i in response['Items']:
-            speech_output = speech_output + i['event_type'] + " for " + i['person_name'] + "."
+            for i in response['Items']:
+                speech_output = speech_output + i['event_type'] + " for " + i['person_name'] + "."
+        else:
+            speech_output = "No events falling on " + event_date + " were found."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
