@@ -59,8 +59,12 @@ def on_intent(intent_request, session):
     # Dispatch to your skill's intent handlers
     if intent_name == "Save":
         return EventRegistry.save_event(intent_request)
-    elif intent_name == "RetrieveByName":
-        return EventRegistry.retrieve_event_by_name(intent_request)
+    elif intent_name == "RetrieveByNameAndType":
+        return EventRegistry.retrieve_events_by_name_and_type(intent_request)
+    elif intent_name == "RetrieveByDate":
+        return EventRegistry.retrieve_events_by_date_and_type(intent_request)
+    elif intent_name == "RetrieveByDate":
+        return EventRegistry.retrieve_events_by_date(intent_request)
     else:
         raise ValueError("Invalid intent")
 
@@ -110,7 +114,7 @@ class EventRegistry:
                                                            should_end_session=True))
 
     @staticmethod
-    def retrieve_event_by_name(intent_request):
+    def retrieve_events_by_name_and_type(intent_request):
 
         card_title = intent_request['intent']['name']
 
@@ -132,6 +136,61 @@ class EventRegistry:
         print(response['Items'][0]['event_date'])
 
         speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
+
+        return build_response(session_attributes={},
+                              speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
+
+    @staticmethod
+    def retrieve_events_by_date_and_type(intent_request):
+
+        card_title = intent_request['intent']['name']
+
+        event_date = intent_request['intent']['slots']['EventDate']['value']
+        event_type = intent_request['intent']['slots']['EventType']['value']
+
+        print("Retrieving " + event_type + " for " + event_date)
+
+        # get connection to dynamo
+        dynamo = boto3.resource('dynamodb')
+
+        # get table
+        table = dynamo.Table('event_registry')
+
+        response = table.scan(
+                FilterExpression=Key('event_date').eq(event_date) and Key('event_type').eq(event_type)
+        )
+
+        speech_output = event_type + " for " + event_date + " are"
+
+        for i in response['Items']:
+            speech_output = speech_output + " and" + response['Items'][i]['person_name']
+
+        return build_response(session_attributes={},
+                              speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
+
+    @staticmethod
+    def retrieve_events_by_date(intent_request):
+
+        card_title = intent_request['intent']['name']
+
+        event_date = intent_request['intent']['slots']['EventDate']['value']
+
+        print("Retrieving events for " + event_date)
+
+        # get connection to dynamo
+        dynamo = boto3.resource('dynamodb')
+
+        # get table
+        table = dynamo.Table('event_registry')
+
+        response = table.scan(
+                FilterExpression=Key('event_date').eq(event_date)
+        )
+
+        speech_output = "Events for " + event_date + " are"
+
+        for i in response['Items']:
+            speech_output = speech_output + response['Items'][i]['event_type'] + " for " + response['Items'][i]['person_name'] + "."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
