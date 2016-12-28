@@ -2,8 +2,7 @@ import json
 import boto3
 import uuid
 from datetime import datetime
-from boto3.dynamodb.conditions import Key, Attr
-from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
 
 def lambda_handler(event, context):
@@ -61,7 +60,7 @@ def on_intent(intent_request, session):
         return EventRegistry.save_event(intent_request)
     elif intent_name == "RetrieveByNameAndType":
         return EventRegistry.retrieve_events_by_name_and_type(intent_request)
-    elif intent_name == "RetrieveByDate":
+    elif intent_name == "RetrieveByDateAndType":
         return EventRegistry.retrieve_events_by_date_and_type(intent_request)
     elif intent_name == "RetrieveByDate":
         return EventRegistry.retrieve_events_by_date(intent_request)
