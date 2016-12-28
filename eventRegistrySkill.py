@@ -1,5 +1,6 @@
 import json
 import boto3
+import uuid
 from datetime import datetime
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
@@ -50,7 +51,6 @@ def on_intent(intent_request, session):
     """ Called when the user specifies an intent for this skill """
 
     print("on_intent requestId=" + intent_request['requestId'] + ", sessionId=" + session['sessionId'])
-
     print("intent_request_json: " + json.dumps(intent_request, indent=4, sort_keys=True))
 
     intent_name = intent_request['intent']['name']
@@ -72,82 +72,18 @@ class EventRegistry:
 
         card_title = intent_request['intent']['name']
 
-        person_first_name = intent_request['intent']['slots']['PersonFirstName']['value']
-        person_last_name = intent_request['intent']['slots']['PersonLastName']['value']
+        person_name = intent_request['intent']['slots']['PersonName']['value']
         event_type = intent_request['intent']['slots']['EventType']['value']
         event_date = intent_request['intent']['slots']['EventDate']['value']
 
         # persist in database
         #{
-        #    "person_first_name" : "person_first_name",
-        #    "person_last_name" : "person_last_name",
-        #    "event_type" : "event_type",
-        #    "event_date" : "event_date",
-        #    "created_date": "today's date/time"
+        #    "uuid" : uuid,
+        #    "person_name" : person_name,
+        #    "event_type" : event_type,
+        #    "event_date" : event_date,
+        #    "created_date_time_utc": today's date/time
         #}
-
-        payload_json = {'person_first_name' : person_first_name, 'person_last_name' : person_last_name,
-                        'event_type' : event_type, 'event_date' : event_date, 'created_date_time' : datetime.now().isoformat()}
-
-
-        print("json to add to db:" + json.dumps(payload_json, indent=4, sort_keys=True))
-        print("Putting data in dynamodb. Saving " + event_type + " for " + person_first_name + " " +  person_last_name + " as " + event_date)
-
-        EventRegistry.save_in_db(person_first_name, event_date, json.dumps(payload_json))
-        reprompt_text = ""
-
-        speech_output = "Saved " + event_type + " for " + person_first_name + " " + person_last_name + " as " + event_date
-        return build_response({}, build_speechlet_response(title=card_title,
-                                                           output=speech_output,
-                                                           reprompt_text=reprompt_text,
-                                                           should_end_session=True))
-
-    @staticmethod
-    def retrieve_event_by_name(intent_request):
-        """ Sets the phrase in dynamo DB and prepares the speech to reply to the user."""
-
-        card_title = intent_request['intent']['name']
-
-        person_first_name = intent_request['intent']['slots']['PersonFirstName']['value']
-        event_type = intent_request['intent']['slots']['EventType']['value']
-
-        # query the database
-
-        response = EventRegistry.get_from_db(person_first_name, event_type)
-        print("retrieved response from database: " + response)
-
-        return build_response(session_attributes={},
-                              speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
-
-    @staticmethod
-    def get_from_db(person_first_name, event_type):
-        print("Retrieveing " + event_type + " for " + person_first_name)
-
-        # get connection to dynamo
-        dynamo = boto3.resource('dynamodb')
-
-        # get table
-        table = dynamo.Table('event_registry')
-        response = "not found"
-        try:
-            response = table.get_item(
-                    Key={
-                        'person_first_name': person_first_name
-                    }
-            )
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-        else:
-            #item = response['Item']
-            print("Response succeeded:")
-            print(response)
-
-        return response
-
-
-
-    @staticmethod
-    def save_in_db(person_first_name, event_date, payload):
 
         # get connection to dynamo
         dynamo = boto3.resource('dynamodb')
@@ -156,10 +92,47 @@ class EventRegistry:
         table = dynamo.Table('event_registry')
 
         table.put_item(Item={
-            'person_first_name': person_first_name,
+            'uuid': str(uuid.uuid4()),
+            'person_name': person_name,
+            'event_type': event_type,
             'event_date': event_date,
-            'event_details': payload
+            'created_date_time_utc': datetime.utcnow().isoformat()
         })
+
+        print("Successfully added data to dynamodb. Saved " + event_type + " for " + person_name + " as " + event_date)
+
+        reprompt_text = ""
+
+        speech_output = "Saved " + event_type + " for " + person_name + " as " + event_date
+        return build_response({}, build_speechlet_response(title=card_title,
+                                                           output=speech_output,
+                                                           reprompt_text=reprompt_text,
+                                                           should_end_session=True))
+
+    @staticmethod
+    def retrieve_event_by_name(intent_request):
+
+        card_title = intent_request['intent']['name']
+
+        person_name = intent_request['intent']['slots']['PersonName']['value']
+        event_type = intent_request['intent']['slots']['EventType']['value']
+
+        print("Retrieveing " + event_type + " for " + person_name)
+
+        # get connection to dynamo
+        dynamo = boto3.resource('dynamodb')
+
+        # get table
+        table = dynamo.Table('event_registry')
+
+        # TODO
+        event_date = "2000-01-01"
+
+        speech_output = event_type + " for " + person_name + " is on " + event_date
+
+        return build_response(session_attributes={},
+                              speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
+
 
 # --------------- Functions that control the skill's behavior ------------------
 
