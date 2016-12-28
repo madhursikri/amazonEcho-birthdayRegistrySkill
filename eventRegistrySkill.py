@@ -155,14 +155,15 @@ class EventRegistry:
         table = dynamo.Table('event_registry')
 
         response = table.scan(
-                FilterExpression=Key('event_date').eq(event_date) and Key('event_type').eq(event_type)
+                FilterExpression=Key('event_date').eq(event_date) & Key('event_type').eq(event_type)
         )
 
+        print(response)
         if len(response['Items']) > 0:
             speech_output = "The following people have " + event_type + " on " + event_date + ","
 
             for i in response['Items']:
-                speech_output = speech_output + i['person_name'] + " "
+                speech_output = speech_output + i['person_name'] + ", "
         else:
             speech_output = "No " + event_type + " falling on " + event_date + " were found."
 
