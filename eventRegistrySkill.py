@@ -2,6 +2,7 @@ import json
 import boto3
 import uuid
 from datetime import datetime
+import calendar
 from boto3.dynamodb.conditions import Key
 
 
@@ -106,7 +107,13 @@ class EventRegistry:
 
         reprompt_text = ""
 
-        speech_output = "Saved " + person_name + " " + event_type + " on " + event_date + "."
+        # convert event_date (01-01) to Jan 01
+        event_month = event_date[:2]
+        event_day = event_date[3:]
+
+        event_date_in_format = calendar.month_name[int(event_month)] + " " + event_day
+
+        speech_output = "Saved " + person_name + " " + event_type + " as " + event_date_in_format + "."
         return build_response({}, build_speechlet_response(title=card_title,
                                                            output=speech_output,
                                                            reprompt_text=reprompt_text,
@@ -127,11 +134,19 @@ class EventRegistry:
         table = dynamo.Table('event_registry')
 
         response = table.scan(
-                FilterExpression=Key('person_name').eq(person_name) and Key('event_type').eq(event_type)
+                FilterExpression=Key('person_name').eq(person_name) & Key('event_type').eq(event_type)
         )
 
+        print(response)
         if len(response['Items']) > 0:
-            speech_output = event_type + " for " + person_name + " is on " + response['Items'][0]['event_date']
+            # convert event_date (01-01) to Jan 01
+            event_date = response['Items'][0]['event_date']
+            event_month = event_date[:2]
+            event_day = event_date[3:]
+
+            event_date_in_format = calendar.month_name[int(event_month)] + " " + event_day
+
+            speech_output = event_type + " for " + person_name + " is on " + event_date_in_format
         else:
             speech_output = event_type + " for " + person_name + " was not found. Please add the event to the registry first."
 
@@ -159,13 +174,20 @@ class EventRegistry:
         )
 
         print(response)
+
+        # convert event_date (01-01) to Jan 01
+        event_month = event_date[:2]
+        event_day = event_date[3:]
+
+        event_date_in_format = calendar.month_name[int(event_month)] + " " + event_day
+
         if len(response['Items']) > 0:
-            speech_output = "The following people have " + event_type + " on " + event_date + ","
+            speech_output = "The following people have " + event_type + " on " + event_date_in_format + ","
 
             for i in response['Items']:
                 speech_output = speech_output + i['person_name'] + ", "
         else:
-            speech_output = "No " + event_type + " falling on " + event_date + " were found."
+            speech_output = "No " + event_type + " falling on " + event_date_in_format + " were found."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
@@ -187,13 +209,19 @@ class EventRegistry:
                 FilterExpression=Key('event_date').eq(event_date)
         )
 
+        # convert event_date (01-01) to Jan 01
+        event_month = event_date[:2]
+        event_day = event_date[3:]
+
+        event_date_in_format = calendar.month_name[int(event_month)] + " " + event_day
         if len(response['Items']) > 0:
-            speech_output = "Events for " + event_date + " are "
+
+            speech_output = "Events for " + event_date_in_format + " are "
 
             for i in response['Items']:
-                speech_output = speech_output + i['event_type'] + " for " + i['person_name'] + "."
+                speech_output = speech_output + i['event_type'] + " for " + i['person_name'] + " and"
         else:
-            speech_output = "No events falling on " + event_date + " were found."
+            speech_output = "No events falling on " + event_date_in_format + " were found."
 
         return build_response(session_attributes={},
                               speechlet_response=build_speechlet_response("Repeat", speech_output, "", True))
