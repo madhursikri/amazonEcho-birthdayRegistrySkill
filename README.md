@@ -106,20 +106,20 @@ Note: You can either give a specific date or say "this week", "next week" etc.
 ```
 
 # Alexa sample utterences
-Save save {PersonName} {EventType} as {EventDate}
-Save save {PersonName} {EventType} on {EventDate}
-Save add {PersonName} {EventType} as {EventDate}
-Save add {PersonName} {EventType} on {EventDate}
-Save enter {PersonName} {EventType} as {EventDate}
-Save enter {PersonName} {EventType} on {EventDate}
-RetrieveByNameAndType when is {PersonName} {EventType}
-RetrieveByDateAndType who all are celebrating their {EventType} {EventDate}
-RetrieveByDateAndType who all have {EventType} {EventDate}
-RetrieveByDate what are all the events for {EventDate}
-RetrieveByDate what are the events for {EventDate}
+1. Save save {PersonName} {EventType} as {EventDate}
+2. Save save {PersonName} {EventType} on {EventDate}
+3. Save add {PersonName} {EventType} as {EventDate}
+4. Save add {PersonName} {EventType} on {EventDate}
+5. Save enter {PersonName} {EventType} as {EventDate}
+6. Save enter {PersonName} {EventType} on {EventDate}
+7. RetrieveByNameAndType when is {PersonName} {EventType}
+8. RetrieveByDateAndType who all are celebrating their {EventType} {EventDate}
+9. RetrieveByDateAndType who all have {EventType} {EventDate}
+10. RetrieveByDate what are all the events for {EventDate}
+11. RetrieveByDate what are the events for {EventDate}
 
 
 # Alexa custom slot types
-birthday
-anniversary
+1. birthday
+2. anniversary
    
