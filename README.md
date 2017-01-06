@@ -1,12 +1,12 @@
 Event Regsitry Skill for Amazon Echo
  
 # Add an event to the database
-Save {PersonName} {EventType} as {EventDate}
-Save {PersonName} {EventType} on {EventDate}
-Add {PersonName} {EventType} as {EventDate}
-Add {PersonName} {EventType} on {EventDate}
-Enter {PersonName} {EventType} as {EventDate}
-Enter {PersonName} {EventType} on {EventDate}
+1. Save {PersonName} {EventType} as {EventDate}
+2. Save {PersonName} {EventType} on {EventDate}
+3. Add {PersonName} {EventType} as {EventDate}
+4. Add {PersonName} {EventType} on {EventDate}
+5. Enter {PersonName} {EventType} as {EventDate}
+6. Enter {PersonName} {EventType} on {EventDate}
   
 Currently only the following EventType's are supported:
 
