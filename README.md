@@ -1,10 +1,37 @@
 Event Regsitry Skill for Amazon Echo
  
 # Add an event to the database
-  TODO
+Save {PersonName} {EventType} as {EventDate}
+Save {PersonName} {EventType} on {EventDate}
+Add {PersonName} {EventType} as {EventDate}
+Add {PersonName} {EventType} on {EventDate}
+Enter {PersonName} {EventType} as {EventDate}
+Enter {PersonName} {EventType} on {EventDate}
+  
+Currently only the following EventType's are supported:
+
+1. birthday
+2. anniversary
+
   
 # Retrieve events fom the database
-  TOOD
+Currently the following methods are supported to retrieve the events from the registry
+
+## Retrieve events by person name and event type. Say any of the following to the amazon echo
+
+1. When is {PersonName} {EventType}
+
+## Retrieve events by event date and event type. Say any of the following to the amazon echo
+
+1. Who all are celebrating their {EventType} {EventDate}
+2. Who all have {EventType} {EventDate}
+
+## Retrieve events by event date. Say any of the following to the amazon echo
+   
+1. what are all the events for {EventDate}
+2. what are the events for {EventDate}
+
+Note: You can either give a specific date or say "this week", "next week" etc. 
   
 # Alexa Intent Schema
 ```
